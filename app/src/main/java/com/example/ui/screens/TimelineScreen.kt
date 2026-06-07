@@ -9,6 +9,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.DateRange
@@ -33,7 +34,10 @@ import kotlin.math.roundToInt
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun TimelineScreen(viewModel: DevTrackViewModel) {
+fun TimelineScreen(
+    viewModel: DevTrackViewModel,
+    onBack: () -> Unit
+) {
     val projects by viewModel.projects.collectAsStateWithLifecycle()
     var selectedProject by remember(projects) { mutableStateOf<Project?>(projects.firstOrNull()) }
     var dropdownExpanded by remember { mutableStateOf(false) }
@@ -50,10 +54,14 @@ fun TimelineScreen(viewModel: DevTrackViewModel) {
         topBar = {
             TopAppBar(
                 title = { Text("زمان‌بندی و برآورد اتمام", fontWeight = FontWeight.Bold) },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.primaryContainer,
-                    titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer
-                )
+                navigationIcon = {
+                    IconButton(onClick = onBack) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = "بازگشت"
+                        )
+                    }
+                }
             )
         }
     ) { padding ->
@@ -73,7 +81,7 @@ fun TimelineScreen(viewModel: DevTrackViewModel) {
                         Icons.Default.DateRange,
                         contentDescription = null,
                         modifier = Modifier.size(72.dp),
-                        tint = GreyFuture
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
                     )
                     Text(
                         "هیچ پروژه‌ای تعریف نشده است",
@@ -164,7 +172,7 @@ fun TimelineScreen(viewModel: DevTrackViewModel) {
                                     verticalAlignment = Alignment.CenterVertically,
                                     horizontalArrangement = Arrangement.spacedBy(12.dp)
                                 ) {
-                                    Icon(Icons.Default.Info, null, tint = OrangePending)
+                                    Icon(Icons.Default.Info, null, tint = MaterialTheme.colorScheme.primary)
                                     Text("صفحه‌ای در ساختار سایت این پروژه یافت نشد.")
                                 }
                             }
@@ -206,6 +214,14 @@ fun ThreeScenarioEstimatesCard(tasks: List<Task>) {
     val mostLikelyDays = (highCount * 1.0f + mediumCount * 2.0f + lowCount * 3.5f).roundToInt()
     val pessimisticDays = (highCount * 2.0f + mediumCount * 4.0f + lowCount * 6.0f).roundToInt()
 
+    // High-contrast adaptive color calculations based on theme luminance
+    val isDark = MaterialTheme.colorScheme.background.let {
+        it.red * 0.2126f + it.green * 0.7152f + it.blue * 0.0722f < 0.5f
+    }
+    val activeGreen = if (isDark) NotionGreenDark else NotionGreenLight
+    val activeOrange = if (isDark) NotionYellowDark else NotionYellowLight
+    val activeRed = if (isDark) NotionRedDark else NotionRedLight
+
     Card(
         modifier = Modifier.fillMaxWidth(),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
@@ -235,7 +251,7 @@ fun ThreeScenarioEstimatesCard(tasks: List<Task>) {
                 EstimateItemCard(
                     title = "خوش‌بینانه",
                     days = if (totalRemaining == 0) "0" else "$optimisticDays",
-                    indicatorColor = GreenDone,
+                    indicatorColor = activeGreen,
                     modifier = Modifier.weight(1f)
                 )
 
@@ -243,7 +259,7 @@ fun ThreeScenarioEstimatesCard(tasks: List<Task>) {
                 EstimateItemCard(
                     title = "محتمل‌ترین",
                     days = if (totalRemaining == 0) "0" else "$mostLikelyDays",
-                    indicatorColor = OrangePending,
+                    indicatorColor = activeOrange,
                     modifier = Modifier.weight(1f)
                 )
 
@@ -251,7 +267,7 @@ fun ThreeScenarioEstimatesCard(tasks: List<Task>) {
                 EstimateItemCard(
                     title = "بدبینانه",
                     days = if (totalRemaining == 0) "0" else "$pessimisticDays",
-                    indicatorColor = RedUrgent,
+                    indicatorColor = activeRed,
                     modifier = Modifier.weight(1f)
                 )
             }
@@ -303,6 +319,12 @@ fun MilestoneRow(
 ) {
     val progress = if (tasksCount == 0) 1.0f else completedTasksCount.toFloat() / tasksCount
 
+    // High-contrast adaptive green
+    val isDark = MaterialTheme.colorScheme.background.let {
+        it.red * 0.2126f + it.green * 0.7152f + it.blue * 0.0722f < 0.5f
+    }
+    val activeGreen = if (isDark) NotionGreenDark else NotionGreenLight
+
     Card(
         modifier = Modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
@@ -322,7 +344,7 @@ fun MilestoneRow(
                         modifier = Modifier
                             .size(24.dp)
                             .background(
-                                if (progress == 1f) GreenDone.copy(alpha = 0.15f) else PrimaryColor.copy(alpha = 0.15f),
+                                if (progress == 1f) activeGreen.copy(alpha = 0.15f) else MaterialTheme.colorScheme.primary.copy(alpha = 0.15f),
                                 CircleShape
                             ),
                         contentAlignment = Alignment.Center
@@ -331,7 +353,7 @@ fun MilestoneRow(
                             modifier = Modifier
                                 .size(10.dp)
                                 .background(
-                                    if (progress == 1f) GreenDone else PrimaryColor,
+                                    if (progress == 1f) activeGreen else MaterialTheme.colorScheme.primary,
                                     CircleShape
                                 )
                         )
@@ -343,7 +365,7 @@ fun MilestoneRow(
                 }
 
                 if (progress == 1f) {
-                    Icon(Icons.Default.CheckCircle, "تکمیل شده", tint = GreenDone)
+                    Icon(Icons.Default.CheckCircle, "تکمیل شده", tint = activeGreen)
                 } else {
                     Text(
                         "${(progress * 100).roundToInt()}%",

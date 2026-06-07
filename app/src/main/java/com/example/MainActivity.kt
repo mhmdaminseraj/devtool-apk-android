@@ -13,6 +13,9 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.getValue
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.data.DevTrackDatabase
 import com.example.data.DevTrackRepository
 import com.example.ui.components.AppNavigationShell
@@ -30,12 +33,20 @@ class MainActivity : ComponentActivity() {
         val repository = DevTrackRepository(database)
 
         setContent {
-            MyApplicationTheme {
+            val sharedPrefs = remember { getSharedPreferences("devtrack_preferences", MODE_PRIVATE) }
+            val viewModel: DevTrackViewModel = viewModel(factory = DevTrackViewModelFactory(repository, sharedPrefs))
+            val themeModeState by viewModel.themeMode.collectAsStateWithLifecycle()
+            val isDark = when (themeModeState) {
+                0 -> false
+                1 -> true
+                else -> androidx.compose.foundation.isSystemInDarkTheme()
+            }
+
+            MyApplicationTheme(darkTheme = isDark) {
                 Surface(modifier = Modifier.fillMaxSize()) {
                     val navController = rememberNavController()
-                    val viewModel: DevTrackViewModel = viewModel(factory = DevTrackViewModelFactory(repository))
 
-                    AppNavigationShell(navController = navController) {
+                    AppNavigationShell(navController = navController, viewModel = viewModel) {
                         NavHost(navController = navController, startDestination = Screen.Home) {
                             composable<Screen.Home> {
                                 DashboardScreen(
@@ -53,14 +64,45 @@ class MainActivity : ComponentActivity() {
                                     },
                                     onNewProject = {
                                         navController.navigate(Screen.NewProject)
+                                    },
+                                    onBack = {
+                                        if (navController.previousBackStackEntry != null) {
+                                            navController.popBackStack()
+                                        } else {
+                                            navController.navigate(Screen.Home) {
+                                                popUpTo(Screen.Home) { inclusive = false }
+                                            }
+                                        }
                                     }
                                 )
                             }
                             composable<Screen.Tasks> {
-                                TasksScreen(viewModel)
+                                TasksScreen(
+                                    viewModel = viewModel,
+                                    onBack = {
+                                        if (navController.previousBackStackEntry != null) {
+                                            navController.popBackStack()
+                                        } else {
+                                            navController.navigate(Screen.Home) {
+                                                popUpTo(Screen.Home) { inclusive = false }
+                                            }
+                                        }
+                                    }
+                                )
                             }
                             composable<Screen.Timeline> {
-                                TimelineScreen(viewModel = viewModel)
+                                TimelineScreen(
+                                    viewModel = viewModel,
+                                    onBack = {
+                                        if (navController.previousBackStackEntry != null) {
+                                            navController.popBackStack()
+                                        } else {
+                                            navController.navigate(Screen.Home) {
+                                                popUpTo(Screen.Home) { inclusive = false }
+                                            }
+                                        }
+                                    }
+                                )
                             }
                             composable<Screen.NewProject> {
                                 NewProjectScreen(
@@ -78,6 +120,18 @@ class MainActivity : ComponentActivity() {
                                 SiteStructureScreen(
                                     projectId = structure.projectId,
                                     viewModel = viewModel,
+                                    onBack = { navController.popBackStack() }
+                                )
+                            }
+                            composable<Screen.Settings> {
+                                SettingsScreen(
+                                    viewModel = viewModel,
+                                    onAboutClick = { navController.navigate(Screen.About) },
+                                    onBack = { navController.popBackStack() }
+                                )
+                            }
+                            composable<Screen.About> {
+                                AboutScreen(
                                     onBack = { navController.popBackStack() }
                                 )
                             }

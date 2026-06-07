@@ -7,6 +7,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
@@ -43,7 +44,17 @@ fun SiteStructureScreen(
 
     Scaffold(
         topBar = {
-            TopAppBar(title = { Text("ساختار سایت") })
+            TopAppBar(
+                title = { Text("ساختار سایت") },
+                navigationIcon = {
+                    IconButton(onClick = onBack) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = "بازگشت"
+                        )
+                    }
+                }
+            )
         },
         floatingActionButton = {
             ExtendedFloatingActionButton(
@@ -107,7 +118,9 @@ fun PageItem(page: Page, viewModel: DevTrackViewModel, allTasks: List<Task>) {
 
     Card(
         modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
+        shape = androidx.compose.foundation.shape.RoundedCornerShape(8.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outline)
     ) {
         Column(modifier = Modifier.fillMaxWidth()) {
             Row(
@@ -180,7 +193,7 @@ fun PageItem(page: Page, viewModel: DevTrackViewModel, allTasks: List<Task>) {
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .padding(horizontal = 16.dp, vertical = 6.dp)
-                                .background(MaterialTheme.colorScheme.surface, shape = RoundedCornerShape(12.dp))
+                                .background(MaterialTheme.colorScheme.surface, shape = RoundedCornerShape(6.dp))
                                 .padding(12.dp)
                         ) {
                             Row(
@@ -270,10 +283,17 @@ fun PageItem(page: Page, viewModel: DevTrackViewModel, allTasks: List<Task>) {
                                                         color = if (task.isCompleted) MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f) else MaterialTheme.colorScheme.onSurface
                                                     )
                                                     
+                                                    val isDarkInStructure = MaterialTheme.colorScheme.background.let {
+                                                        it.red * 0.2126f + it.green * 0.7152f + it.blue * 0.0722f < 0.5f
+                                                    }
+                                                    val activeGrey = if (isDarkInStructure) Color(0xFF9E9E9E) else Color(0xFF5F5E59)
+                                                    val activeOrange = if (isDarkInStructure) com.example.ui.theme.NotionYellowDark else com.example.ui.theme.NotionYellowLight
+                                                    val activeRed = if (isDarkInStructure) com.example.ui.theme.NotionRedDark else com.example.ui.theme.NotionRedLight
+
                                                     val priorityInfo = when(task.priority) {
-                                                        TaskPriority.LOW -> "عادی" to com.example.ui.theme.GreyFuture
-                                                        TaskPriority.MEDIUM -> "مهم" to com.example.ui.theme.OrangePending
-                                                        TaskPriority.HIGH -> "فوری" to com.example.ui.theme.RedUrgent
+                                                        TaskPriority.LOW -> "عادی" to activeGrey
+                                                        TaskPriority.MEDIUM -> "مهم" to activeOrange
+                                                        TaskPriority.HIGH -> "فوری" to activeRed
                                                     }
                                                     
                                                     Box(

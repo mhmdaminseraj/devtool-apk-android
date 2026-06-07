@@ -1,6 +1,8 @@
 package com.example.ui.screens
 
 import androidx.compose.foundation.layout.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
@@ -24,6 +26,14 @@ fun NewProjectScreen(
         topBar = {
             TopAppBar(
                 title = { Text("پروژه جدید") },
+                navigationIcon = {
+                    IconButton(onClick = onBack) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = "بازگشت"
+                        )
+                    }
+                }
             )
         }
     ) { padding ->

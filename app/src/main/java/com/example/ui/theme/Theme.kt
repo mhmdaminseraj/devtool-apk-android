@@ -16,34 +16,52 @@ import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.graphics.Color
 
 private val DarkColorScheme = darkColorScheme(
-    primary = PrimaryColor,
-    secondary = SecondaryColor,
-    tertiary = Color(0xFFBD93F9),
-    background = Background,
-    surface = Surface,
-    surfaceVariant = Color(0xFF1F2638),
-    onPrimary = Color(0xFF001F24),
-    onSecondary = Color(0xFF002010),
-    onBackground = TextPrimary,
-    onSurface = TextPrimary,
-    onSurfaceVariant = TextSecondary,
-    outline = Color(0xFF2E3A54),
-    error = RedUrgent,
-    onError = Color(0xFF5F0014)
+    primary = NotionBlueDark,
+    secondary = NotionGreenDark,
+    tertiary = NotionPurpleDark,
+    background = DarkBackground,
+    surface = DarkSurface,
+    surfaceVariant = Color(0xFF2F2F2F),
+    onPrimary = Color(0xFF191919),
+    onSecondary = Color(0xFF191919),
+    onBackground = DarkTextPrimary,
+    onSurface = DarkTextPrimary,
+    onSurfaceVariant = DarkTextSecondary,
+    outline = DarkBorder,
+    error = NotionRedDark,
+    onError = Color(0xFF191919)
 )
 
-private val LightColorScheme = DarkColorScheme // Always maintain dark developer style as requested by the user
+private val LightColorScheme = lightColorScheme(
+    primary = NotionBlueLight,
+    secondary = NotionGreenLight,
+    tertiary = NotionPurpleLight,
+    background = LightBackground,
+    surface = LightSurface,
+    surfaceVariant = Color(0xFFF1F1EF),
+    onPrimary = Color.White,
+    onSecondary = Color.White,
+    onBackground = LightTextPrimary,
+    onSurface = LightTextPrimary,
+    onSurfaceVariant = LightTextSecondary,
+    outline = LightBorder,
+    error = NotionRedLight,
+    onError = Color.White
+)
 
 @Composable
 fun MyApplicationTheme(
-    darkTheme: Boolean = true, // Default to dark programmer aesthetics
-    dynamicColor: Boolean = false, // Disable system wallpaper accents to preserve developer palette branding
+    darkTheme: Boolean = isSystemInDarkTheme(), // Automatic responsive support for Light/Dark Notion style representation
+    dynamicColor: Boolean = false, // Disable dynamic wallpaper colors to pin precise neutral Notion color identity
     content: @Composable () -> Unit,
 ) {
-    val colorScheme = DarkColorScheme
+    val colorScheme = if (darkTheme) DarkColorScheme else LightColorScheme
 
-    // Force RTL for Persian application UI
-    CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Rtl) {
+    // Force RTL for Persian application UI and set standard Notion spacing tokens
+    CompositionLocalProvider(
+        LocalLayoutDirection provides LayoutDirection.Rtl,
+        LocalSpacing provides Spacing()
+    ) {
         MaterialTheme(
             colorScheme = colorScheme,
             typography = Typography,

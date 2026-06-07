@@ -12,6 +12,8 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.viewmodel.DevTrackViewModel
 
+import com.example.ui.theme.spacing
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DashboardScreen(
@@ -20,17 +22,18 @@ fun DashboardScreen(
 ) {
     val projects by viewModel.projects.collectAsStateWithLifecycle()
     val recentTasks by viewModel.recentTasks.collectAsStateWithLifecycle()
+    val spacing = MaterialTheme.spacing
 
     Scaffold(
         topBar = { TopAppBar(title = { Text("داشبورد") }) }
     ) { padding ->
         LazyColumn(
-            modifier = Modifier.fillMaxSize().padding(padding).padding(horizontal = 16.dp),
-            contentPadding = PaddingValues(vertical = 16.dp),
-            verticalArrangement = Arrangement.spacedBy(24.dp)
+            modifier = Modifier.fillMaxSize().padding(padding).padding(horizontal = spacing.large),
+            contentPadding = PaddingValues(vertical = spacing.large),
+            verticalArrangement = Arrangement.spacedBy(spacing.extraLarge)
         ) {
             item {
-                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(spacing.large)) {
                     StatCard(title = "پروژه‌ها", value = projects.size.toString(), modifier = Modifier.weight(1f))
                     StatCard(title = "تسک‌های اخیر", value = recentTasks.size.toString(), modifier = Modifier.weight(1f))
                 }
@@ -67,14 +70,17 @@ fun DashboardScreen(
 
 @Composable
 fun StatCard(title: String, value: String, modifier: Modifier = Modifier) {
+    val spacing = MaterialTheme.spacing
     Card(
         modifier = modifier,
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer)
+        shape = androidx.compose.foundation.shape.RoundedCornerShape(8.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f)),
+        border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outline)
     ) {
-        Column(modifier = Modifier.padding(16.dp)) {
-            Text(title, style = MaterialTheme.typography.labelMedium)
-            Spacer(modifier = Modifier.height(8.dp))
-            Text(value, style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold)
+        Column(modifier = Modifier.padding(spacing.large)) {
+            Text(title, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant, fontWeight = FontWeight.Medium)
+            Spacer(modifier = Modifier.height(spacing.small))
+            Text(value, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
         }
     }
 }

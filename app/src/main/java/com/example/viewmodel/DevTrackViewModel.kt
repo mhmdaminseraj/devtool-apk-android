@@ -1,5 +1,6 @@
 package com.example.viewmodel
 
+import android.content.SharedPreferences
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
@@ -8,12 +9,25 @@ import com.example.data.Page
 import com.example.data.Project
 import com.example.data.Section
 import com.example.data.Task
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
-class DevTrackViewModel(private val repository: DevTrackRepository) : ViewModel() {
+class DevTrackViewModel(
+    private val repository: DevTrackRepository,
+    private val sharedPreferences: SharedPreferences
+) : ViewModel() {
+
+    // Theme Mode settings: 0 = Light, 1 = Dark, 2 = System. Default is 0 (Light Mode) as requested.
+    private val _themeMode = MutableStateFlow(sharedPreferences.getInt("theme_mode", 0))
+    val themeMode: StateFlow<Int> = _themeMode
+
+    fun setThemeMode(mode: Int) {
+        _themeMode.value = mode
+        sharedPreferences.edit().putInt("theme_mode", mode).apply()
+    }
 
     val projects: StateFlow<List<Project>> = repository.getAllProjects()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
@@ -82,11 +96,14 @@ class DevTrackViewModel(private val repository: DevTrackRepository) : ViewModel(
     fun getTasksForProject(projectId: String) = repository.getTasksForProject(projectId)
 }
 
-class DevTrackViewModelFactory(private val repository: DevTrackRepository) : ViewModelProvider.Factory {
+class DevTrackViewModelFactory(
+    private val repository: DevTrackRepository,
+    private val sharedPreferences: SharedPreferences
+) : ViewModelProvider.Factory {
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         if (modelClass.isAssignableFrom(DevTrackViewModel::class.java)) {
             @Suppress("UNCHECKED_CAST")
-            return DevTrackViewModel(repository) as T
+            return DevTrackViewModel(repository, sharedPreferences) as T
         }
         throw IllegalArgumentException("Unknown ViewModel class")
     }

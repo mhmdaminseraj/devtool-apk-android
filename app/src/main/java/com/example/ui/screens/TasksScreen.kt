@@ -5,30 +5,47 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.data.*
 import com.example.ui.components.StatusBadge
+import com.example.ui.theme.spacing
 import com.example.viewmodel.DevTrackViewModel
 import java.text.SimpleDateFormat
 import java.util.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun TasksScreen(viewModel: DevTrackViewModel) {
+fun TasksScreen(
+    viewModel: DevTrackViewModel,
+    onBack: () -> Unit
+) {
     val projects by viewModel.projects.collectAsStateWithLifecycle()
     var showAddTaskDialog by remember { mutableStateOf(false) }
+    val spacing = MaterialTheme.spacing
 
     Scaffold(
-        topBar = { TopAppBar(title = { Text("تسک‌ها") }) },
+        topBar = {
+            TopAppBar(
+                title = { Text("تسک‌ها", fontWeight = FontWeight.Bold) },
+                navigationIcon = {
+                    IconButton(onClick = onBack) {
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "بازگشت")
+                    }
+                }
+            )
+        },
         floatingActionButton = {
             FloatingActionButton(onClick = { showAddTaskDialog = true }) {
                 Icon(Icons.Default.Add, contentDescription = "تسک جدید")
@@ -36,16 +53,42 @@ fun TasksScreen(viewModel: DevTrackViewModel) {
         }
     ) { padding ->
         LazyColumn(
-            modifier = Modifier.fillMaxSize().padding(padding).padding(horizontal = 16.dp),
-            contentPadding = PaddingValues(vertical = 16.dp)
+            modifier = Modifier.fillMaxSize().padding(padding).padding(horizontal = spacing.large),
+            contentPadding = PaddingValues(vertical = spacing.large)
         ) {
             items(projects) { project ->
                 ProjectTasksSection(project, viewModel)
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(spacing.large))
             }
             if (projects.isEmpty()) {
                 item {
-                    Text("هیچ پروژه‌ای وجود ندارد. ابتدا یک پروژه بسازید.", modifier = Modifier.padding(32.dp))
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 48.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.spacedBy(spacing.medium)
+                    ) {
+                        Icon(
+                            Icons.Default.CheckCircle,
+                            contentDescription = null,
+                            modifier = Modifier.size(64.dp),
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
+                        )
+                        Text(
+                            "هیچ پروژه‌ای تعریف نشده است",
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onSurface,
+                            textAlign = TextAlign.Center
+                        )
+                        Text(
+                            "برای ایجاد و مدیریت تسک‌ها ابتدا باید یک پروژه جدید بسازید.",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            textAlign = TextAlign.Center
+                        )
+                    }
                 }
             }
         }
@@ -71,10 +114,17 @@ fun ProjectTasksSection(project: Project, viewModel: DevTrackViewModel) {
     if (tasks.isNotEmpty()) {
         Card(
             modifier = Modifier.fillMaxWidth(),
-            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
+            shape = androidx.compose.foundation.shape.RoundedCornerShape(8.dp),
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+            border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outline)
         ) {
             Column(modifier = Modifier.padding(16.dp)) {
-                Text(project.title, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
+                Text(
+                    project.title, 
+                    style = MaterialTheme.typography.titleSmall, 
+                    fontWeight = FontWeight.Bold, 
+                    color = MaterialTheme.colorScheme.primary
+                )
                 Spacer(modifier = Modifier.height(8.dp))
                 tasks.forEach { task ->
                     TaskItem(task, 
@@ -155,6 +205,29 @@ fun AddTaskDialog(
     }.collectAsStateWithLifecycle(initialValue = emptyList())
     
     var selectedSection by remember(sections) { mutableStateOf<Section?>(sections.firstOrNull()) }
+    
+    // Reset/Auto-update selection on data loading to prevent stuck null state
+    LaunchedEffect(projects) {
+        if (selectedProject == null && projects.isNotEmpty()) {
+            selectedProject = projects.first()
+        }
+    }
+    
+    LaunchedEffect(pages) {
+        if (selectedPage == null && pages.isNotEmpty()) {
+            selectedPage = pages.first()
+        } else if (selectedPage != null && !pages.any { it.id == selectedPage?.id }) {
+            selectedPage = pages.firstOrNull()
+        }
+    }
+    
+    LaunchedEffect(sections) {
+        if (selectedSection == null && sections.isNotEmpty()) {
+            selectedSection = sections.first()
+        } else if (selectedSection != null && !sections.any { it.id == selectedSection?.id }) {
+            selectedSection = sections.firstOrNull()
+        }
+    }
     
     var priority by remember { mutableStateOf(TaskPriority.MEDIUM) }
     

@@ -10,4 +10,7 @@ sealed class Screen {
     
     @Serializable data object NewProject : Screen()
     @Serializable data class SiteStructure(val projectId: String) : Screen()
+    
+    @Serializable data object Settings : Screen()
+    @Serializable data object About : Screen()
 }
