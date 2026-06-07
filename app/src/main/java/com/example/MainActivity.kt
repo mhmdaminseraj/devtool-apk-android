@@ -60,7 +60,7 @@ class MainActivity : ComponentActivity() {
                                 TasksScreen(viewModel)
                             }
                             composable<Screen.Timeline> {
-                                TimelineScreen()
+                                TimelineScreen(viewModel = viewModel)
                             }
                             composable<Screen.NewProject> {
                                 NewProjectScreen(

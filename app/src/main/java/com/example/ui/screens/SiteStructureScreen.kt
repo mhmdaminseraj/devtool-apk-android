@@ -96,7 +96,7 @@ fun PageItem(page: Page, viewModel: DevTrackViewModel) {
             ) {
                 Column(modifier = Modifier.weight(1f)) {
                     Text(page.title, fontWeight = FontWeight.Bold)
-                    Text(page.type.name, style = MaterialTheme.typography.bodySmall, color = Color.Gray)
+                    Text(page.type.name, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
                 IconButton(onClick = { viewModel.deletePage(page) }) {
                     Icon(Icons.Default.Delete, contentDescription = "حذف صفحه", tint = MaterialTheme.colorScheme.error)

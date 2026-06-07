@@ -32,7 +32,7 @@ fun StatusBadge(
         isComplete -> GreenDone
         isUrgent -> RedUrgent
         status == "در انتظار" -> OrangePending
-        else -> Color.DarkGray
+        else -> GreyFuture
     }
 
     Surface(

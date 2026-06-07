@@ -2,16 +2,17 @@ package com.example.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
-val GreenDone = Color(0xFF4CAF50)
-val OrangePending = Color(0xFFFF9800)
-val RedUrgent = Color(0xFFF44336)
-val GreyFuture = Color(0xFF9E9E9E)
+val GreenDone = Color(0xFF00FF9C)
+val OrangePending = Color(0xFFFFB300)
+val RedUrgent = Color(0xFFFF3366)
+val GreyFuture = Color(0xFF64748B)
 
 // App general
-val PrimaryColor = Color(0xFF3F51B5)
-val SecondaryColor = Color(0xFFE91E63)
+val PrimaryColor = Color(0xFF00E5FF)
+val SecondaryColor = Color(0xFF00FF9C)
 
-val Background = Color(0xFFF5F5F5)
-val Surface = Color(0xFFFFFFFF)
-val TextPrimary = Color(0xFF212121)
-val TextSecondary = Color(0xFF757575)
+val Background = Color(0xFF080B10)
+val Surface = Color(0xFF131824)
+val TextPrimary = Color(0xFFF1F5F9)
+val TextSecondary = Color(0xFF94A3B8)
+
